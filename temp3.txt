@@ -1,0 +1,219 @@
+#include<fstream>
+#include <cstdlib>
+#include<iostream>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
+#include "temp2.cc"
+using namespace std;
+/*
+	struct own	{
+        int length = 0;
+		unordered_set<int> neighbors;
+	};
+unordered_map<int, own> *map(int **array, int len) {
+    unordered_map<int, own> *nodeset = new unordered_map<int, own>;
+    for (int i = 0; i < len; ++i) {
+        for(int j = 0; j < 2; ++j) {
+         //    cout << "not hitting?" << endl;
+          //  cout << "the number" << array[i][j] << endl;
+            std::unordered_map<int, own>::const_iterator got = nodeset->find (array[i][j]);
+            if (got == nodeset->end()) {
+                unordered_set<int> new_set;
+                    if (j == 1) {
+                        new_set.insert(array[i][j-1]);
+                    } else {
+                        new_set.insert(array[i][j+1]);
+                    }
+                    own n = {1, new_set};
+                    (*nodeset)[array[i][j]] = n;
+            //        cout << "why" << endl;
+            //        cout<< "what" << ((*nodeset)[array[i][j]]).length << endl;
+            } else {
+       //         cout << "hit3" << endl;
+                int moderator = 0;
+                if (j == 1) {
+                    moderator = -1;
+                } else {
+                    moderator = 1;
+                }
+              //  std::unordered_set<int>::const_iterator get = ->find (array[i][j]);
+                if (((*nodeset)[array[i][j]]).neighbors.find(array[i][j+moderator]) == ((*nodeset)[array[i][j]]).neighbors.end()) {
+//                    cout<< "hit2" << endl;
+                 ((*nodeset)[array[i][j]]).neighbors.insert(array[i][j+moderator]);
+                 ++((*nodeset)[array[i][j]]).length;
+                }
+            }
+        }
+    }
+    return nodeset;
+}
+*/
+
+unordered_map<int,own>* addDegree(unordered_map<int,own>* m,int &len){
+
+	 unordered_map<int,own>*  degreeList = new unordered_map<int,own>;
+        for(auto it = (*m).begin(); it != (*m).end(); ++it){ //iterate through the first hashmap              
+            int size=(it->second).length;       //get the degree of node i
+       
+	        unordered_map<int,own>::const_iterator got = (*degreeList).find(size); 
+         if(got==(*degreeList).end()){
+                    ++len;
+                     unordered_set<int>* s= new unordered_set<int>;
+                    (*s).insert(it->first);
+                     own o;
+                     o.length=1;
+                     o.neighbors=(*s);
+                     (*degreeList)[size]=o;
+//         cout<<"size is"<<size<<"inserted" <<it->first<<endl;
+         }
+         else{
+        
+             unordered_set<int>* s=&((*degreeList)[size].neighbors);
+    
+                ++(*degreeList)[size].length;
+            
+           (*s).insert(it->first);
+//           cout<<"size is"<<size<<"inserted "<< it->first<<endl;
+        }
+//       cout<<"degree is"<<size<<"size is"<<(*degreeList)[size].length<<endl;
+    }
+        return degreeList;
+}
+
+/* unordered_set<int>* getClique(int arrayLength,int* array_of_degrees,unordered_map<int, own> *degreeMap,unordered_map<int,own> *nodeMap){
+     for (int i = arrayLength - 1; i >= 0; ++i) {
+         degreeMap[array_of_degrees[i]].neighbors;
+     }
+
+
+
+
+*/
+
+  unordered_set<int>* getClique(int arrayLength,int* bst,unordered_map<int, own> *degreeList,unordered_map<int,own> *list){
+        int k=arrayLength-1;
+        int largest = *(bst+k);// largest degree
+        unordered_set<int>*  hs = &(*degreeList)[largest].neighbors;//list of nodes w that degree 
+        unordered_set<int>* stemp=new unordered_set<int>;
+        for(auto i = (*hs).begin();i!=(*hs).end();i++){
+        (*stemp).insert(*i);
+        }
+        while(true){
+        
+            while(largest>=(*degreeList)[*(bst+k)].length){
+                -- largest;
+        
+                if(largest==*(bst+k-1)){
+                    int temp = *(bst+k);//temp for largest degree
+                    --k;                
+                    auto i =(*degreeList)[*(bst+k)].neighbors.begin();
+                    while(i!=(*degreeList)[*(bst+k)].neighbors.end()){
+                   (* stemp).insert(*i);
+                    ++i;
+                    }
+                    auto it = (*degreeList)[temp].neighbors.begin();//iterator for larges set 
+                    while(it!=(*degreeList)[temp].neighbors.end()){// nodes of current degree
+                        (*degreeList)[*(bst+k)].neighbors.insert(*it);// add those nodes to next largest 
+                        ++it; 
+                    }	
+                
+                    (*degreeList)[*(bst+k)].length+=(*degreeList)[temp].length;  
+
+                    hs=&(*degreeList)[*(bst+k)].neighbors;
+              
+                
+                }
+            }
+            
+            int length = (*degreeList)[*(bst+k)].length;//how many nodes w that degree
+    
+            int temp2=0;
+            auto it =(* hs).begin(); //iterator for nodes w that degree
+
+            while(it!=(*hs).end()&&length>largest+1 ){
+                int node=*it;    // iterate thru nodes w that degree 
+                std::unordered_set<int> hs2 = (*list)[node].neighbors;//list of neighbors of node
+                int deg = (*list)[node].length;// degre of node
+                auto i =hs2.begin();//iterator for neighbours
+                while(i!=hs2.end()&&deg>=largest){
+                    int neighbor = *i;
+                    if((*hs).find(neighbor)==(*hs).end()){// if neighbour not in hs
+                        --deg;
+                    }
+                    if(deg<largest){
+                       -- length; 
+                        (*hs).erase(node);                      
+                        break;
+                    }
+	    ++i;     
+                } 
+            
+		++it;
+		if((it==(*hs).end())&&(length>(largest+1))){
+			it=(*hs).begin();
+
+            if(temp2==length){
+        
+                break;
+            }
+    
+        temp2=length;
+        
+           // cout<<"at temmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmp"<<endl;
+            }
+			}          
+            if(length<=largest){ // copy values to the next 
+            
+              for(auto i =(*stemp).begin();i!=(*stemp).end();++i){
+                  (*hs).insert(*i);
+              }
+             if(largest==0){
+                  break;
+              }
+            }
+            else if(length==1+largest){
+           // cout<<"fdaaaaaaaaaaaaaaa"<<endl;
+                break;//160
+            }   
+        }
+return hs;
+  }
+
+/*
+    int main(){                   
+    int array1[2] = {1,2};
+    int array2[2] = {2,3};
+    int array3[2] = {3,1};
+    int array4[2] = {1,4};
+    int array5[2] = {3,4};
+    int array6[2] = {5,1};
+    int array7[2]= {5,6};
+    int array[2] ={1,6};
+    int array8[2]={6,4};
+    int array9[2] ={4,5};
+    int *a [10]={array1,array2,array3,array4,array5,array,array6,array7,array8,array9};
+    int bst[4]={2,3,4,5};
+    int l =0;
+    unordered_map<int,own>* node = map(a,10);
+   unordered_map<int,own>* secondNode= addDegree(node,l);
+   unordered_set<int>* s=getClique(4,bst,secondNode,node);
+    for(auto it=(*secondNode).begin();it!=(*secondNode).end();it++){
+        printf("%d deg %d ", it->first,(it->second).length);
+        unordered_set<int>s =(*secondNode)[it->first].neighbors;
+        for(auto t=s.begin();t!=s.end();++t){
+            cout<< *t<<"a"<<endl;
+        }
+    }    
+    for(auto itt=(*node).begin();itt!=(*node).end();itt++){
+                printf("%d degg %d ", itt->first,(itt->second).length);
+                        unordered_set<int>s =(*node)[itt->first].neighbors;
+                                for(auto tt=s.begin();tt!=s.end();++tt){
+                                                cout<< *tt<<"a"<<endl;
+                                                        }
+                                    }
+    for(auto ittt=(*s).begin();ittt!=(*s).end();ittt++){
+        cout<<*ittt<<"big"<<endl;
+    }
+}
+*/
